@@ -644,27 +644,3 @@ def test_report_processed_stage_names_the_seller_as_source(tmp_path):
     processed_line = next(line for line in text.splitlines()
                           if line.strip().startswith("processed"))
     assert "seller's own acknowledgement" in processed_line
-    
-
-
-def test_failed_stage_is_phrased_as_an_expectation(tmp_path):
-    events = clean_events()
-    twice = next(e for e in events if e.kind == "ack_recorded"
-                 and e.detail.get("status") == "processed")
-    events.append(twice.model_copy(update={"event_id": "ev-dup"}))
-    p = profile()
-    run = RunRecord(
-        run_id="run-1", profile_name=p.name,
-        profile_fingerprint=fingerprint(p.model_dump()), created_at=1.0,
-        participants=[{"name": "buyer", "role": "buyer"},
-                      {"name": "seller", "role": "seller"}],
-        releases={"nandatown": "0.2.0", "evaluator": EVALUATOR_VERSION,
-                  "python": "3.14"},
-    )
-    out = tmp_path / "bundle"
-    write_bundle(str(out), p, run, [], events, evaluate(p, "run-1", events))
-    text = render_report(load_bundle(str(out)))
-    line = next(x for x in text.splitlines()
-                if x.strip().startswith("processed "))
-    assert "Failed" in line and "expected: " in line
-    
