@@ -141,6 +141,8 @@ def render_report(bundle: dict[str, Any]) -> str:
         label = STATUS_LABEL[s.status]
         meaning = ("not exercised in this run" if s.status == "not_tested"
                    else STAGE_MEANING.get(s.name, ""))
+        if s.status == "failed" and meaning:
+            meaning = "expected: " + meaning
         evidence = f" [{', '.join(s.evidence)}]" if s.evidence else ""
         add(f"  {s.name.ljust(name_width)}  {label:<20} {meaning}{evidence}")
         if s.note:
